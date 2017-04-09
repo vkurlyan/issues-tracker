@@ -61,7 +61,8 @@ export const HomeView = React.createClass({
 })
 
 HomeView.propTypes = {
-    token     : PropTypes.string,
+    token : PropTypes.string,
+    validationMessage : PropTypes.string,
     submitToken : PropTypes.func.isRequired,
 }
 

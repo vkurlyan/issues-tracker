@@ -1,4 +1,5 @@
-import createGithubInstance from '../../../utils/createGithubInstance'
+import createGithubInstance, { getErrorMessage } from '../../../utils/createGithubInstance'
+import { browserHistory } from 'react-router'
 
 // ------------------------------------
 // Constants
@@ -15,22 +16,18 @@ export function submitToken (token) {
     const server = createGithubInstance(token)
 
     server.get('/user').then(function(response) {
+      // TODO store it in sessionStorage
       dispatch(submitTokenResolve(response.data))
+      browserHistory.push('/repos');
 
     }).catch(function (error) {
-      let message = 'Bas request';
-
-      if (error.response && error.response.data && error.response.data.message) {
-        message = error.response.data.message
-      }
-
-      dispatch(submitTokenReject(message))
+      console.log(error);
+      dispatch(submitTokenReject(getErrorMessage(error)))
     });
 
-    return {
+    dispatch({
       type: SUBMIT_TOKEN,
-      token: token
-    }
+    })
   }
 }
 
@@ -52,7 +49,13 @@ export function submitTokenReject (message) {
 // Action Handlers
 // ------------------------------------
 const ACTION_HANDLERS = {
-  [SUBMIT_TOKEN_RESOLVE]    : (state, action) => {
+  [SUBMIT_TOKEN]: (state, action) => {
+    return {
+        ...state,
+        validationMessage: null,
+    }
+  },
+  [SUBMIT_TOKEN_RESOLVE]: (state, action) => {
     return {
         ...state,
         reposUrl: action.data.repos_url,
@@ -60,7 +63,7 @@ const ACTION_HANDLERS = {
         validationMessage: null,
     }
   },
-  [SUBMIT_TOKEN_REJECT]    : (state, action) => {
+  [SUBMIT_TOKEN_REJECT]: (state, action) => {
     return {
         ...state,
         validationMessage: action.message
